@@ -99,11 +99,12 @@ describe("statusText", () => {
     });
   });
 
-  it("row 8: no-config", () => {
+  it("row 8: no-config has the command cdd.createConfiguration", () => {
     expect(statusOfRecord(recordOfState("no-config"))).toEqual({
       text: "CDD: no cdd.config.yaml",
       severity: "information",
       busy: false,
+      commandId: "cdd.createConfiguration",
     });
   });
 

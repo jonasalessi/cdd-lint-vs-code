@@ -45,6 +45,10 @@
       {
         "command": "cdd.showOutput",
         "title": "CDD: Show Output"
+      },
+      {
+        "command": "cdd.createConfiguration",
+        "title": "CDD: Create Configuration"
       }
     ],
     "configuration": {

@@ -27,4 +27,10 @@ suite("activation", () => {
     const commands = await vscode.commands.getCommands(true);
     assert.ok(commands.includes("cdd.installBinary"));
   });
+
+  test("cdd.createConfiguration is registered", async () => {
+    await vscode.extensions.getExtension(extensionId)?.activate();
+    const commands = await vscode.commands.getCommands(true);
+    assert.ok(commands.includes("cdd.createConfiguration"));
+  });
 });

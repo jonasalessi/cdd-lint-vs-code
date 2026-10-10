@@ -19,6 +19,7 @@ import { RequestQueue, type PipelineFunction } from "./analysis/requestQueue";
 import { runCddCheck } from "./analysis/runCddCheck";
 import { BinaryResolver } from "./binary/BinaryResolver";
 import { registerSelectBinaryCommand } from "./binary/selectBinaryCommand";
+import { registerCreateConfigCommand } from "./config/createConfigCommand";
 import { ConfigResolver } from "./config/ConfigResolver";
 import { CddDiagnostics } from "./diagnostics/CddDiagnostics";
 import { CddInlayHintsProvider } from "./inlay-hints/CddInlayHintsProvider";
@@ -79,6 +80,7 @@ export function activate(context: vscode.ExtensionContext): ExtensionApi {
     vscode.commands.registerCommand("cdd.showOutput", () => logger.show()),
     registerSelectBinaryCommand(execFile),
     registerInstallBinaryCommand(installFlow),
+    registerCreateConfigCommand(binaryResolver),
     clearCacheOnBinaryPathChange(binaryResolver),
     queue,
     new AnalysisScheduler({ store, queue, configResolver, binaryResolver, onDidChangeConfigFile }),

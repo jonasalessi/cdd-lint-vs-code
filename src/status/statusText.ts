@@ -3,7 +3,8 @@ import type { CddUnit } from "../analysis/report";
 
 export type StatusSeverity = "information" | "warning" | "error";
 
-export type StatusCommandId = "cdd.installBinary" | "cdd.selectBinary" | "cdd.showOutput";
+export type StatusCommandId =
+  "cdd.createConfiguration" | "cdd.installBinary" | "cdd.selectBinary" | "cdd.showOutput";
 
 export type StatusInput = {
   isSupported: boolean;
@@ -20,6 +21,7 @@ export type StatusText = {
 };
 
 export const statusCommandTitles: Record<StatusCommandId, string> = {
+  "cdd.createConfiguration": "Create Configuration",
   "cdd.installBinary": "Install",
   "cdd.selectBinary": "Select Binary",
   "cdd.showOutput": "Show Output",
@@ -28,7 +30,7 @@ export const statusCommandTitles: Record<StatusCommandId, string> = {
 const statusOfState: Record<RecordState, (record: DocumentRecord) => StatusText> = {
   measured: statusOfMeasured,
   "not-applicable": () => information("CDD: file not in the CDD configuration"),
-  "no-config": () => information("CDD: no cdd.config.yaml"),
+  "no-config": () => information("CDD: no cdd.config.yaml", "cdd.createConfiguration"),
   "no-binary": () => warning("CDD: binary not found", "cdd.installBinary"),
   "invalid-binary": () => warning("CDD: configured binary not valid", "cdd.selectBinary"),
   "output-file-configured": () =>
@@ -75,11 +77,14 @@ function unitWithHighestTotal(units: readonly CddUnit[]): CddUnit | undefined {
   );
 }
 
-function information(text: string): StatusText {
-  return { text, severity: "information", busy: false };
+function information(text: string, commandId?: StatusCommandId): StatusText {
+  return withCommand({ text, severity: "information", busy: false }, commandId);
 }
 
 function warning(text: string, commandId?: StatusCommandId): StatusText {
-  const status: StatusText = { text, severity: "warning", busy: false };
+  return withCommand({ text, severity: "warning", busy: false }, commandId);
+}
+
+function withCommand(status: StatusText, commandId: StatusCommandId | undefined): StatusText {
   return commandId === undefined ? status : { ...status, commandId };
 }

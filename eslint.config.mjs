@@ -8,6 +8,7 @@ const adapterFiles = [
   "src/binary/selectBinaryCommand.ts",
   "src/install/installBinaryCommand.ts",
   "src/config/configWatcher.ts",
+  "src/config/createConfigCommand.ts",
   "src/analysis/AnalysisScheduler.ts",
   "src/analysis/analyzeCurrentFileCommand.ts",
   "src/inlay-hints/CddInlayHintsProvider.ts",

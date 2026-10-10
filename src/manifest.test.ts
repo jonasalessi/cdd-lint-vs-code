@@ -77,4 +77,11 @@ describe("package.json", () => {
       title: "CDD: Install Managed Binary",
     });
   });
+
+  it("declares the command cdd.createConfiguration", () => {
+    expect(manifest.contributes.commands).toContainEqual({
+      command: "cdd.createConfiguration",
+      title: "CDD: Create Configuration",
+    });
+  });
 });
