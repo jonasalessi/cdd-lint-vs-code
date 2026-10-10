@@ -20,7 +20,7 @@ Supported languages: Go, Java, Kotlin and TypeScript (`.go`, `.java`, `.kt`, `.t
 
 ## Getting started
 
-1. Install the extension. See [Installation](#installation).
+1. Install the extension (Search by CDD Lint in Vs Code Marketplace).
 2. Open your project in VS Code and trust the workspace.
 3. If the project has no `cdd.config.yaml`, run `CDD: Create Configuration` from the command palette. The command opens a terminal and runs `cdd init`, which asks for your languages, metrics and ICP limit. You can also run `cdd init` yourself in the root directory of the project.
 4. Open a supported file. The ICP scores appear at the end of the first line of each code unit.
@@ -28,21 +28,6 @@ Supported languages: Go, Java, Kotlin and TypeScript (`.go`, `.java`, `.kt`, `.t
 6. Open the Problems panel to see the code units that are over their limit.
 
 If the extension finds no `cdd` binary, it shows the notification `CDD binary not found. Install CDD v0.1.0 from github.com?`. Select `Install`, and the scores appear when the installation completes.
-
-## Installation
-
-The extension is not on the Visual Studio Marketplace yet. Install it from a VSIX file:
-
-1. Download `cdd-lint-vscode-<version>.vsix` from the [releases page](https://github.com/jonasalessi/cdd-lint-vs-code/releases).
-2. Run this command:
-
-   ```sh
-   code --install-extension cdd-lint-vscode-<version>.vsix
-   ```
-
-3. Run `Developer: Reload Window` from the command palette.
-
-You can also install the file from the Extensions view: open the `...` menu and select `Install from VSIX...`.
 
 ## How it works
 
