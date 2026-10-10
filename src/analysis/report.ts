@@ -4,6 +4,17 @@ export type CddMetric = {
   score: number;
 };
 
+// The positions are 1-based. The columns count UTF-8 bytes, and the end column is exclusive.
+export type CddOccurrence = {
+  metric: string;
+  line: number;
+  col: number;
+  end_line: number;
+  end_col: number;
+  count: number;
+  score: number;
+};
+
 export type CddUnit = {
   name: string;
   kind: string;
@@ -13,6 +24,7 @@ export type CddUnit = {
   limit: number;
   exceeds: boolean;
   metrics: CddMetric[];
+  occurrences?: CddOccurrence[];
 };
 
 export type CddFile = {

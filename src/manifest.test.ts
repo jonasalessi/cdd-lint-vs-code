@@ -48,8 +48,8 @@ describe("package.json", () => {
     });
   });
 
-  it("declares cdd.showInlayHints as a boolean setting with scope window", () => {
-    expect(manifest.contributes.configuration.properties["cdd.showInlayHints"]).toMatchObject({
+  it("declares cdd.showCodeLens as a boolean setting with scope window", () => {
+    expect(manifest.contributes.configuration.properties["cdd.showCodeLens"]).toMatchObject({
       type: "boolean",
       default: true,
       scope: "window",
@@ -61,6 +61,13 @@ describe("package.json", () => {
       type: "boolean",
       default: true,
       scope: "window",
+    });
+  });
+
+  it("declares the command cdd.toggleIcpDetails", () => {
+    expect(manifest.contributes.commands).toContainEqual({
+      command: "cdd.toggleIcpDetails",
+      title: "CDD: Toggle ICP Details",
     });
   });
 

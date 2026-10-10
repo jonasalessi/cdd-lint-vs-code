@@ -24,21 +24,21 @@ flowchart LR
     binary["BinaryResolver"]
     cdd(["cdd binary"])
     store[("AnalysisStore<br/>one record for each file")]
-    hints["Inlay Hints"]
+    lenses["CodeLens"]
     diagnostics["Diagnostics"]
     status["Status item"]
 
     events --> scheduler --> pipeline
     pipeline --> config
     pipeline --> binary
-    pipeline -->|"cdd check file --all --format json"| cdd
+    pipeline -->|"cdd check file --all --explain --format json"| cdd
     pipeline -->|record| store
-    store -->|change event| hints
+    store -->|change event| lenses
     store -->|change event| diagnostics
     store -->|change event| status
 ```
 
-Data moves in one direction. The left side writes to the store, and the right side only reads from it. A hint request or a diagnostic update never starts a process.
+Data moves in one direction. The left side writes to the store, and the right side only reads from it. A CodeLens request or a diagnostic update never starts a process.
 
 ### The path of one analysis
 
@@ -49,9 +49,9 @@ Data moves in one direction. The left side writes to the store, and the right si
    2. `BinaryResolver` finds a valid `cdd` binary.
    3. `runCddCheck` runs the binary, and `classifyRun` turns the exit code, stdout and stderr into one outcome.
 4. **Record.** The queue writes the result to `AnalysisStore` only if the document is still open and its version did not change during the run.
-5. **Presentation.** The store emits a change event. The Inlay Hints provider, the diagnostics publisher and the status item read the record and update.
+5. **Presentation.** The store emits a change event. The CodeLens provider, the diagnostics publisher and the status item read the record and update.
 
-When you type in a file, no analysis starts. `shiftUnits` moves the stored line of each code unit, so the hints follow the code until the next save.
+When you type in a file, no analysis starts. `shiftUnits` moves the stored line of each code unit, so the scores follow the code until the next save.
 
 ### Pure files and adapter files
 
@@ -60,24 +60,25 @@ Each source file is one of two kinds:
 - **Adapter files** import `vscode`. They register commands, listen to events and convert plain data to VS Code objects. They hold no decision logic. `eslint.config.mjs` lists these files, and ESLint rejects a `vscode` import in any other file.
 - **Pure files** hold all decisions. They receive what they need as plain values or as functions: the process function (`execFile`), the network function (`https.get`), the setting values, the timers and an `AbortSignal`. Unit tests replace these functions, so the tests need no VS Code and no real binary.
 
-For example, `buildHints.ts` returns `{ line, label, tooltipLines }`, and `CddInlayHintsProvider.ts` converts that to `InlayHint` objects.
+For example, `buildLenses.ts` returns `{ line, scoreTitle, tooltipLines, toggleTitle }`, and `CddCodeLensProvider.ts` converts that to `CodeLens` objects.
 
 `src/extension.ts` is the composition root. It creates the modules and connects them, and it is the best file to read first.
 
 ### Folders
 
-| Folder             | Responsibility                                                                                                         | Start with                                                |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `src/analysis/`    | Triggers, scheduling, the pipeline, the run of the binary, the classification of a run and the store.                  | `analyzeDocument.ts`, `requestQueue.ts`, `classifyRun.ts` |
-| `src/config/`      | Finds `cdd.config.yaml` for a document and watches these files for changes.                                            | `ConfigResolver.ts`                                       |
-| `src/binary/`      | Finds and validates the `cdd` binary, and holds the constants of the pinned release.                                   | `BinaryResolver.ts`                                       |
-| `src/install/`     | Downloads, verifies, extracts and activates the managed binary, after the user approves.                               | `installManagedBinary.ts`, `installFlow.ts`               |
-| `src/inlay-hints/` | Builds the ICP hints from a record.                                                                                    | `buildHints.ts`                                           |
-| `src/diagnostics/` | Builds the diagnostics from a record.                                                                                  | `buildDiagnostics.ts`                                     |
-| `src/status/`      | The language status item and the notifications, each shown a limited number of times.                                  | `statusText.ts`, `analysisNotifications.ts`               |
-| `src/logging/`     | The `CDD` Output Channel.                                                                                              | `logger.ts`                                               |
-| `contract/`        | Contract tests. They run the real binary on small fixture projects and check the facts that `classifyRun` depends on.  | `checkRows.contract.test.ts`                              |
-| `e2e/`             | Extension-host tests. They run in a real VS Code with a fake binary, so each test controls the response of the binary. | `analysis.test.ts`, `fake-cdd/cdd`                        |
+| Folder             | Responsibility                                                                                                          | Start with                                                |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `src/analysis/`    | Triggers, scheduling, the pipeline, the run of the binary, the classification of a run and the store.                   | `analyzeDocument.ts`, `requestQueue.ts`, `classifyRun.ts` |
+| `src/config/`      | Finds `cdd.config.yaml` for a document and watches these files for changes.                                             | `ConfigResolver.ts`                                       |
+| `src/binary/`      | Finds and validates the `cdd` binary, and holds the constants of the pinned release.                                    | `BinaryResolver.ts`                                       |
+| `src/install/`     | Downloads, verifies, extracts and activates the managed binary, after the user approves.                                | `installManagedBinary.ts`, `installFlow.ts`               |
+| `src/code-lens/`   | Builds the score lens and the toggle lens of each code unit from a record.                                              | `buildLenses.ts`                                          |
+| `src/icp-details/` | Builds the line labels and the construct hover from the occurrences of a record, and holds which files show the labels. | `buildLineDetails.ts`, `buildHoverLines.ts`               |
+| `src/diagnostics/` | Builds the diagnostics from a record.                                                                                   | `buildDiagnostics.ts`                                     |
+| `src/status/`      | The language status item and the notifications, each shown a limited number of times.                                   | `statusText.ts`, `analysisNotifications.ts`               |
+| `src/logging/`     | The `CDD` Output Channel.                                                                                               | `logger.ts`                                               |
+| `contract/`        | Contract tests. They run the real binary on small fixture projects and check the facts that `classifyRun` depends on.   | `checkRows.contract.test.ts`                              |
+| `e2e/`             | Extension-host tests. They run in a real VS Code with a fake binary, so each test controls the response of the binary.  | `analysis.test.ts`, `fake-cdd/cdd`                        |
 
 ### Three levels of tests
 
@@ -132,13 +133,13 @@ code --uninstall-extension jonasalessi.cdd-lint-vscode
 
 ## Check that the extension works
 
-1. Open a supported file. An ICP hint appears at the end of the first line of each code unit, with no save.
-2. Hover over a hint. The tooltip shows the metrics of the score.
+1. Open a supported file. An ICP score appears above the first line of each code unit, with no save.
+2. Hover over a score. The tooltip shows the metrics of the score.
 3. Open the language status with the `{}` icon in the status bar. The CDD item shows the highest ICP score of the file.
 4. Make a code unit exceed its limit and save the file. The Problems panel shows a `CDD` diagnostic.
 5. Run `CDD: Show Output`. The Output Channel shows each run of the binary.
 
-If no hint appears, the CDD item of the language status shows the reason. Also make sure that the workspace is trusted and that `editor.inlayHints.enabled` is not `off`.
+If no score appears, the CDD item of the language status shows the reason. Also make sure that the workspace is trusted and that `editor.codeLens` is `true`.
 
 ## Run the tests
 

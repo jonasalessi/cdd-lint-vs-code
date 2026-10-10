@@ -275,7 +275,7 @@ describe("analyzeDocument", () => {
       await analyze();
 
       expect(infoLines).toEqual([
-        `Run ${binaryPath} ["check","${relativePath}","--all","--format","json"] ` +
+        `Run ${binaryPath} ["check","${relativePath}","--all","--explain","--format","json"] ` +
           `in ${configDir}: 12 ms, exit code 0, outcome measured`,
       ]);
       expect(errorLines).toEqual([]);

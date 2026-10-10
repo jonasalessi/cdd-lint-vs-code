@@ -13,7 +13,7 @@ export type SupportedDocumentSelector = {
 
 export const supportedExtensions = [".go", ".java", ".kt", ".ts", ".tsx"];
 
-// The Inlay Hints provider and the status item register with these selectors.
+// The CodeLens provider and the status item register with these selectors.
 export const supportedDocumentSelectors: SupportedDocumentSelector[] = supportedExtensions.map(
   (extension) => ({ scheme: "file", pattern: `**/*${extension}` }),
 );

@@ -19,10 +19,15 @@ import { RequestQueue, type PipelineFunction } from "./analysis/requestQueue";
 import { runCddCheck } from "./analysis/runCddCheck";
 import { BinaryResolver } from "./binary/BinaryResolver";
 import { registerSelectBinaryCommand } from "./binary/selectBinaryCommand";
+import { CddCodeLensProvider } from "./code-lens/CddCodeLensProvider";
 import { registerCreateConfigCommand } from "./config/createConfigCommand";
 import { ConfigResolver } from "./config/ConfigResolver";
 import { CddDiagnostics } from "./diagnostics/CddDiagnostics";
-import { CddInlayHintsProvider } from "./inlay-hints/CddInlayHintsProvider";
+import type { LineDetail } from "./icp-details/buildLineDetails";
+import { DetailsVisibility } from "./icp-details/DetailsVisibility";
+import { IcpDetailsDecorations } from "./icp-details/IcpDetailsDecorations";
+import { IcpHoverProvider } from "./icp-details/IcpHoverProvider";
+import { registerToggleDetailsCommand } from "./icp-details/toggleDetailsCommand";
 import { installUi, registerInstallBinaryCommand } from "./install/installBinaryCommand";
 import { startInstallation, type InstallFlow } from "./install/installFlow";
 import { createLogger } from "./logging/logger";
@@ -37,6 +42,7 @@ import { NotifyOnce } from "./status/notifyOnce";
 
 export type ExtensionApi = {
   getRecord: (uri: string) => DocumentRecord | undefined;
+  getLineDetails: (document: vscode.TextDocument) => LineDetail[];
 };
 
 type PipelineModules = {
@@ -68,6 +74,8 @@ export function activate(context: vscode.ExtensionContext): ExtensionApi {
   const configResolver = new ConfigResolver({ log: logger });
   const store = new AnalysisStore();
   const once = new NotifyOnce();
+  const detailsVisibility = new DetailsVisibility();
+  const detailsDecorations = new IcpDetailsDecorations({ store, visibility: detailsVisibility });
   const installFlow = createInstallFlow(context, binaryResolver);
   const notify = createNotifications({ context, installFlow, once });
   const queue = createRequestQueue(
@@ -85,11 +93,17 @@ export function activate(context: vscode.ExtensionContext): ExtensionApi {
     queue,
     new AnalysisScheduler({ store, queue, configResolver, binaryResolver, onDidChangeConfigFile }),
     registerAnalyzeCurrentFileCommand(queue),
-    new CddInlayHintsProvider(store),
+    new CddCodeLensProvider({ store, visibility: detailsVisibility }),
     new CddDiagnostics(store),
+    detailsDecorations,
+    new IcpHoverProvider(store),
+    registerToggleDetailsCommand(detailsVisibility),
     new CddStatusItem({ store, queue }),
   );
-  return { getRecord: (uri) => store.get(uri) };
+  return {
+    getRecord: (uri) => store.get(uri),
+    getLineDetails: (document) => detailsDecorations.lineDetailsOf(document),
+  };
 }
 
 export function deactivate(): void {}

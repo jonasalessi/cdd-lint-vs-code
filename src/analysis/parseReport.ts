@@ -1,4 +1,4 @@
-import type { CddFile, CddMetric, CddReport, CddUnit } from "./report";
+import type { CddFile, CddMetric, CddOccurrence, CddReport, CddUnit } from "./report";
 
 type JsonObject = Record<string, unknown>;
 type FieldType = "string" | "number" | "boolean";
@@ -6,6 +6,16 @@ type ItemGuard<Item> = (value: unknown) => value is Item;
 
 const metricFields: Record<string, FieldType> = {
   metric: "string",
+  count: "number",
+  score: "number",
+};
+
+const occurrenceFields: Record<string, FieldType> = {
+  metric: "string",
+  line: "number",
+  col: "number",
+  end_line: "number",
+  end_col: "number",
   count: "number",
   score: "number",
 };
@@ -48,15 +58,27 @@ function isFile(value: unknown): value is CddFile {
 }
 
 function isUnit(value: unknown): value is CddUnit {
-  return hasFields(value, unitFields) && isArrayOf(value.metrics, isMetric);
+  return (
+    hasFields(value, unitFields) &&
+    isArrayOf(value.metrics, isMetric) &&
+    isOptionalArrayOf(value.occurrences, isOccurrence)
+  );
 }
 
 function isMetric(value: unknown): value is CddMetric {
   return hasFields(value, metricFields);
 }
 
+function isOccurrence(value: unknown): value is CddOccurrence {
+  return hasFields(value, occurrenceFields);
+}
+
 function isOptionalWarnings(value: unknown): boolean {
-  return value === undefined || isArrayOf(value, isString);
+  return isOptionalArrayOf(value, isString);
+}
+
+function isOptionalArrayOf<Item>(value: unknown, isItem: ItemGuard<Item>): boolean {
+  return value === undefined || isArrayOf(value, isItem);
 }
 
 function isString(value: unknown): value is string {

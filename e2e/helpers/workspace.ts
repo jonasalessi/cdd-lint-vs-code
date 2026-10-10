@@ -13,8 +13,15 @@ type AnalysisRecord = {
   isStale: boolean;
 };
 
+export type LineDetail = {
+  // 0-based line of the document.
+  line: number;
+  label: string;
+};
+
 type ExtensionApi = {
   getRecord: (uri: string) => AnalysisRecord | undefined;
+  getLineDetails: (document: vscode.TextDocument) => LineDetail[];
 };
 
 export async function activateExtension(): Promise<ExtensionApi> {
@@ -29,6 +36,12 @@ export async function activateExtension(): Promise<ExtensionApi> {
 export async function recordOf(document: vscode.TextDocument): Promise<AnalysisRecord | undefined> {
   const api = await activateExtension();
   return api.getRecord(document.uri.toString());
+}
+
+// The line labels of the ICP details. VS Code gives a test no access to the decorations of an editor.
+export async function lineDetailsOf(document: vscode.TextDocument): Promise<LineDetail[]> {
+  const api = await activateExtension();
+  return api.getLineDetails(document);
 }
 
 export function workspacePath(...segments: string[]): string {

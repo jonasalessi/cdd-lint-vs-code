@@ -66,7 +66,7 @@ export async function runCddCheck(
 }
 
 export function checkArguments(relativePath: string): string[] {
-  return ["check", relativePath, "--all", "--format", "json"];
+  return ["check", relativePath, "--all", "--explain", "--format", "json"];
 }
 
 function execute(request: CheckRequest, execFile: CheckExecFile): Promise<ProcessOutput> {

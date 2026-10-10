@@ -11,8 +11,12 @@ const adapterFiles = [
   "src/config/createConfigCommand.ts",
   "src/analysis/AnalysisScheduler.ts",
   "src/analysis/analyzeCurrentFileCommand.ts",
-  "src/inlay-hints/CddInlayHintsProvider.ts",
+  "src/code-lens/CddCodeLensProvider.ts",
   "src/diagnostics/CddDiagnostics.ts",
+  "src/icp-details/IcpDetailsDecorations.ts",
+  "src/icp-details/IcpHoverProvider.ts",
+  "src/icp-details/toggleDetailsCommand.ts",
+  "src/markdown/markdownOfLines.ts",
   "src/status/CddStatusItem.ts",
 ];
 

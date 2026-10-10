@@ -2,39 +2,47 @@ import type { DocumentRecord } from "../analysis/documentRecord";
 import { excessOf } from "../analysis/excessOf";
 import type { CddMetric, CddUnit } from "../analysis/report";
 
-export type HintSource = {
+export type LensSource = {
   record: DocumentRecord | undefined;
   lineCount: number;
-  showInlayHints: boolean;
+  showCodeLens: boolean;
+  areDetailsShown: boolean;
 };
 
-export type Hint = {
+// The two lenses of one code unit: the score, and the toggle of the ICP details.
+export type UnitLens = {
   // 0-based line of the document.
   line: number;
-  label: string;
+  scoreTitle: string;
   tooltipLines: string[];
+  toggleTitle: string;
 };
 
 const staleLine = "Unsaved changes: the score is from the last saved version.";
 
-export function buildHints(source: HintSource): Hint[] {
-  const { record, lineCount, showInlayHints } = source;
-  if (record === undefined || !showInlayHints) {
+export function buildLenses(source: LensSource): UnitLens[] {
+  const { record, lineCount, showCodeLens, areDetailsShown } = source;
+  if (record === undefined || !showCodeLens) {
     return [];
   }
+  const toggleTitle = areDetailsShown ? "Hide ICP Details" : "Show ICP Details";
   return record.units
-    .filter((unit) => isLineOfDocument(unit.line - 1, lineCount))
-    .map((unit) => hintOf(unit, record.isStale));
+    .filter((unit) => hasComplexity(unit) && isLineOfDocument(unit.line - 1, lineCount))
+    .map((unit) => ({ ...scoreOf(unit, record.isStale), toggleTitle }));
+}
+
+function hasComplexity(unit: CddUnit): boolean {
+  return unit.total > 0;
 }
 
 function isLineOfDocument(line: number, lineCount: number): boolean {
   return line >= 0 && line < lineCount;
 }
 
-function hintOf(unit: CddUnit, isStale: boolean): Hint {
+function scoreOf(unit: CddUnit, isStale: boolean): Omit<UnitLens, "toggleTitle"> {
   return {
     line: unit.line - 1,
-    label: `ICP: ${String(unit.total)} / ${String(unit.limit)}`,
+    scoreTitle: `ICP: ${String(unit.total)} / ${String(unit.limit)}`,
     tooltipLines: tooltipLinesOf(unit, isStale),
   };
 }

@@ -65,7 +65,14 @@ describe("runCddCheck", () => {
 
       expect(fake.calls).toHaveLength(1);
       expect(fake.calls[0]?.file).toBe(binaryPath);
-      expect(fake.calls[0]?.args).toEqual(["check", relativePath, "--all", "--format", "json"]);
+      expect(fake.calls[0]?.args).toEqual([
+        "check",
+        relativePath,
+        "--all",
+        "--explain",
+        "--format",
+        "json",
+      ]);
     });
 
     it("uses the configuration directory, no shell, and the 10 second limit", async () => {
@@ -202,6 +209,7 @@ describe("runCddCheck", () => {
         "check",
         relativePath,
         "--all",
+        "--explain",
         "--format",
         "json",
         "",

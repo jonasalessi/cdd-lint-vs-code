@@ -16,6 +16,12 @@ suite("activation", () => {
     assert.ok(commands.includes("cdd.showOutput"));
   });
 
+  test("cdd.toggleIcpDetails is registered", async () => {
+    await vscode.extensions.getExtension(extensionId)?.activate();
+    const commands = await vscode.commands.getCommands(true);
+    assert.ok(commands.includes("cdd.toggleIcpDetails"));
+  });
+
   test("cdd.selectBinary is registered", async () => {
     await vscode.extensions.getExtension(extensionId)?.activate();
     const commands = await vscode.commands.getCommands(true);

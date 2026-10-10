@@ -184,6 +184,27 @@ describe("cdd check, rows of plan section 2.2 with a report on stdout", () => {
     expect(cddLines(run.stderr)).toEqual([]);
   });
 
+  it("violation, blocking: each unit has the occurrences of --explain", async () => {
+    const run = await runInFixtureCopy(orderRun("violation-blocking"));
+
+    const occurrences = parseReport(run.stdout)?.files[0]?.units[0]?.occurrences ?? [];
+
+    // Line 4 of the fixture is "    for (const item of items) {", and the loop ends on line 10.
+    expect(occurrences[0]).toMatchObject({
+      metric: "code_branch",
+      line: 4,
+      col: 5,
+      end_line: 10,
+      end_col: 6,
+      count: 1,
+      score: 1,
+    });
+    expect(occurrences.map((occurrence) => occurrence.metric).sort()).toEqual([
+      ...Array<string>(4).fill("code_branch"),
+      ...Array<string>(4).fill("condition"),
+    ]);
+  });
+
   it("violation, not blocking: a warning line on stderr is not a failure", async () => {
     const run = await runInFixtureCopy(orderRun("violation-not-blocking"));
 

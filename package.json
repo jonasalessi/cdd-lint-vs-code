@@ -1,7 +1,7 @@
 {
   "name": "cdd-lint-vscode",
   "displayName": "CDD Lint",
-  "description": "Shows the ICP scores of cdd-lint as Inlay Hints and reports ICP violations as diagnostics.",
+  "description": "Shows the ICP scores of cdd-lint as CodeLens and reports ICP violations as diagnostics.",
   "version": "0.1.0",
   "publisher": "jonasalessi",
   "license": "Apache-2.0",
@@ -35,6 +35,10 @@
         "title": "CDD: Analyze Current File"
       },
       {
+        "command": "cdd.toggleIcpDetails",
+        "title": "CDD: Toggle ICP Details"
+      },
+      {
         "command": "cdd.selectBinary",
         "title": "CDD: Select Binary"
       },
@@ -60,11 +64,11 @@
           "scope": "machine",
           "description": "Absolute path of the cdd executable. Empty means automatic discovery."
         },
-        "cdd.showInlayHints": {
+        "cdd.showCodeLens": {
           "type": "boolean",
           "default": true,
           "scope": "window",
-          "description": "Shows or hides the ICP Inlay Hints."
+          "description": "Shows or hides the ICP CodeLens."
         },
         "cdd.showDiagnostics": {
           "type": "boolean",

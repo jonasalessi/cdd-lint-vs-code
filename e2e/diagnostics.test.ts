@@ -17,7 +17,7 @@ import {
   uninstallFakeCdd,
   waitForRuns,
 } from "./helpers/fakeCdd";
-import { shownHintsOf, waitForShownHints } from "./helpers/inlayHints";
+import { shownScoresOf, waitForShownScores } from "./helpers/codeLens";
 import { settle } from "./helpers/waitFor";
 import {
   activateExtension,
@@ -76,21 +76,21 @@ suite("diagnostics", () => {
 
   teardown(closeAllEditors);
 
-  test("a violating unit gives one diagnostic with source CDD, on the line of its hint", async () => {
+  test("a violating unit gives one diagnostic with source CDD, on the line of its score", async () => {
     const editor = await openSampleWithDiagnostic();
 
     const diagnostic = onlyCddDiagnosticOf(editor.document.uri);
 
-    await waitForShownHints(editor.document, [
-      { line: 0, label: "ICP: 4 / 10" },
-      { line: totalLine, label: totalLabel },
+    await waitForShownScores(editor.document, [
+      { line: 0, title: "ICP: 4 / 10" },
+      { line: totalLine, title: totalLabel },
     ]);
-    const totalHint = (await shownHintsOf(editor.document)).find(
-      (hint) => hint.label === totalLabel,
+    const totalScore = (await shownScoresOf(editor.document)).find(
+      (score) => score.title === totalLabel,
     );
     assert.equal(diagnostic.source, "CDD");
-    assert.equal(diagnostic.range.start.line, totalHint?.line);
-    assert.equal(diagnostic.range.end.line, totalHint?.line);
+    assert.equal(diagnostic.range.start.line, totalScore?.line);
+    assert.equal(diagnostic.range.end.line, totalScore?.line);
   });
 
   test("the diagnostic has the range of the line text, a message, a code and a severity", async () => {
@@ -167,9 +167,9 @@ suite("diagnostics", () => {
     try {
       const editor = await openWorkspaceFile("with-config", "sample.ts");
       await waitForRuns(1);
-      await waitForShownHints(editor.document, [
-        { line: 0, label: "ICP: 4 / 10" },
-        { line: totalLine, label: totalLabel },
+      await waitForShownScores(editor.document, [
+        { line: 0, title: "ICP: 4 / 10" },
+        { line: totalLine, title: totalLabel },
       ]);
 
       await settle();

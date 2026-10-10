@@ -28,7 +28,7 @@ describe("describeRun", () => {
     const run = classifiedRun({ kind: "measured", units: [], blocked: false }, { exitCode: 1 });
 
     expect(describeRun(run)).toBe(
-      'Run /opt/bin/cdd ["check","src/order service.ts","--all","--format","json"] ' +
+      'Run /opt/bin/cdd ["check","src/order service.ts","--all","--explain","--format","json"] ' +
         "in /project/app: 12 ms, exit code 1, outcome measured",
     );
   });

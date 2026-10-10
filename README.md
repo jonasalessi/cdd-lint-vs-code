@@ -8,8 +8,9 @@ The score is in Intrinsic Complexity Points (ICP). Branches, conditions, excepti
 
 ## Features
 
-- **Inline complexity scores.** See the ICP score of each code unit at the end of its first line, for example `ICP: 16.5 / 10`. You do not leave the editor.
+- **Inline complexity scores.** See the ICP score of each code unit above its first line, for example `ICP: 16.5 / 10`. You do not leave the editor.
 - **Score breakdown.** Hover over a score to see which metrics add the points.
+- **ICP details in the function body.** Click `Show ICP Details` next to a score to see, at the end of each line, the points that the line adds. Hover over a construct, for example an `if` or a condition, to see its metric and its points.
 - **Violations in the Problems panel.** Find each code unit that is over its limit, as a warning or as an error.
 - **Automatic analysis.** Open or save a file and the scores update. An analysis of one file takes a few milliseconds.
 - **Simple setup.** The extension finds the `cdd` binary on your machine. If it finds none, it offers to install the binary for you.
@@ -64,14 +65,18 @@ These events start a new analysis of each visible file:
 
 Typing does not start an analysis. While a file has unsaved changes, the scores stay and move with the lines that you add or remove. Their tooltip then says that the score is from the last saved version. Save the file to update the scores.
 
+The ICP details are different: they hide while a file has unsaved changes, because an edit moves the constructs. Save the file to show them again.
+
 ### Where the results appear
 
-| Place          | What you see                                                                                                                                                                                                        |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Editor         | One Inlay Hint for each code unit, for example `ICP: 16.5 / 10`. The tooltip shows the metrics of the score.                                                                                                        |
-| Problems panel | One diagnostic with the source `CDD` and the code `icp-limit` for each code unit that is over its limit. The severity is `Error` when cdd-lint reports the violation as blocking, and `Warning` in all other cases. |
-| Status bar     | A CDD item in the language status. Open it with the `{}` icon. It shows the highest ICP score of the file, or the reason why the file has no result.                                                                |
-| Output panel   | The `CDD` Output Channel logs each run of the binary.                                                                                                                                                               |
+| Place              | What you see                                                                                                                                                                                                                                                                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Editor             | One CodeLens line above each code unit, for example `ICP: 16.5 / 10 \| Show ICP Details`. The tooltip of the score shows the metrics of the score. A code unit with an ICP of 0 has no CodeLens.                                                                                                                                      |
+| Editor, on request | The ICP details. Click `Show ICP Details` next to a score, or run `CDD: Toggle ICP Details`. Each line that adds points then shows a label at its end, for example `+3 ICP · 1 code_branch, 2 condition`. Click `Hide ICP Details` to hide the labels. The details are off by default, and you switch them on for one file at a time. |
+| Editor, on hover   | The metric and the points of the construct under the pointer, for example `condition: +1 ICP`, and the score of its code unit. A construct of more than one line, for example a loop, shows this hover only on its first line.                                                                                                        |
+| Problems panel     | One diagnostic with the source `CDD` and the code `icp-limit` for each code unit that is over its limit. The severity is `Error` when cdd-lint reports the violation as blocking, and `Warning` in all other cases.                                                                                                                   |
+| Status bar         | A CDD item in the language status. Open it with the `{}` icon. It shows the highest ICP score of the file, or the reason why the file has no result.                                                                                                                                                                                  |
+| Output panel       | The `CDD` Output Channel logs each run of the binary.                                                                                                                                                                                                                                                                                 |
 
 ### Which files the extension analyzes
 
@@ -94,7 +99,7 @@ The extension analyzes a file when all of these conditions are true:
 | Setting               | Default | Description                                                                                                                                                         |
 | --------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `cdd.binaryPath`      | `""`    | Absolute path of the `cdd` executable. An empty value means automatic discovery. This setting has the `machine` scope, so a workspace cannot select the executable. |
-| `cdd.showInlayHints`  | `true`  | Shows or hides the ICP scores in the editor.                                                                                                                        |
+| `cdd.showCodeLens`    | `true`  | Shows or hides the ICP scores and the `Show ICP Details` action in the editor.                                                                                      |
 | `cdd.showDiagnostics` | `true`  | Shows or hides the ICP violations in the Problems panel.                                                                                                            |
 
 ### Commands
@@ -102,6 +107,7 @@ The extension analyzes a file when all of these conditions are true:
 | Title                         | Command ID                | Description                                                                                                                                                                                                |
 | ----------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CDD: Analyze Current File`   | `cdd.analyzeCurrentFile`  | Analyzes the file of the active editor. If the file has unsaved changes, the command asks you to save it.                                                                                                  |
+| `CDD: Toggle ICP Details`     | `cdd.toggleIcpDetails`    | Shows or hides the ICP details of the file of the active editor.                                                                                                                                           |
 | `CDD: Select Binary`          | `cdd.selectBinary`        | Lets you select a `cdd` binary. A valid binary is saved in `cdd.binaryPath` in your user settings.                                                                                                         |
 | `CDD: Install Managed Binary` | `cdd.installBinary`       | Downloads and installs cdd-lint `v0.1.0` after you approve it.                                                                                                                                             |
 | `CDD: Show Output`            | `cdd.showOutput`          | Shows the `CDD` Output Channel.                                                                                                                                                                            |
@@ -149,12 +155,12 @@ With Remote SSH, WSL or a dev container, the extension runs on the remote host. 
 **Limitations**
 
 - **Saved content only.** The extension does not analyze unsaved changes.
-- **One score for each code unit.** The tooltip shows the points of each metric. It does not show which line adds each point.
+- **ICP details of saved content only.** The line labels and the construct hover hide while the file has unsaved changes.
 - **Platforms.** A prebuilt binary exists only for macOS (x64, arm64), Linux (x64, arm64) and Windows (x64). On any other platform, install cdd-lint with `go install github.com/jonasalessi/cdd-lint@latest`, then run `CDD: Select Binary`.
 - **Alpine and musl.** The prebuilt Linux binaries need glibc (2.34 or later on x64). They do not run on Alpine Linux or on other musl systems.
 - **`reporter.outputFile`.** If `cdd.config.yaml` sets `reporter.outputFile`, the extension does not analyze the files of that configuration, because each run would overwrite your report file.
 - **Configuration search.** The extension does not find a `cdd.config.yaml` that is above the root of the workspace folder.
-- **Hint color.** VS Code does not let an extension set the color of an Inlay Hint. A score that is over its limit looks the same as any other score. The Problems panel shows the violation.
+- **Score color.** VS Code does not let an extension set the color of a CodeLens. A score that is over its limit looks the same as any other score. The Problems panel shows the violation.
 - **File names with a comma.** The `cdd` binary splits its path arguments on commas, so the extension cannot analyze such a file.
 - **Virtual workspaces.** The extension does not support virtual workspaces.
 
@@ -175,7 +181,7 @@ Open the language status with the `{}` icon in the status bar. The CDD item show
 
 Other problems:
 
-- **No scores, and the status shows a score.** Make sure that the VS Code setting `editor.inlayHints.enabled` is not `off`, and that `cdd.showInlayHints` is `true`.
+- **No scores, and the status shows a score.** Make sure that the VS Code setting `editor.codeLens` is `true`, and that `cdd.showCodeLens` is `true`.
 - **The binary is installed, but the extension does not find it.** If VS Code cannot read your shell environment, a binary in a user directory is not on the `PATH` of the extension. Run `CDD: Select Binary` and select the binary.
 - **No CDD item in the language status.** The item appears only for a `.go`, `.java`, `.kt`, `.ts` or `.tsx` file on disk. Also make sure that the workspace is trusted.
 

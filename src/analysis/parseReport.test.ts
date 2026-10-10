@@ -45,6 +45,23 @@ function reportWithMetric(metric: JsonObject): string {
   return reportWithUnit({ metrics: [metric] });
 }
 
+function validOccurrence(): JsonObject {
+  return {
+    unit: "Order",
+    metric: "code_branch",
+    line: 4,
+    col: 5,
+    end_line: 10,
+    end_col: 6,
+    count: 1,
+    score: 1,
+  };
+}
+
+function reportWithOccurrence(occurrence: JsonObject): string {
+  return reportWithUnit({ occurrences: [occurrence] });
+}
+
 function withoutField(source: JsonObject, field: string): JsonObject {
   return Object.fromEntries(Object.entries(source).filter(([name]) => name !== field));
 }
@@ -70,6 +87,12 @@ describe("parseReport", () => {
     const report = parseReport(reportWithFile({ units: [], warnings: ["syntax error at 3:14"] }));
 
     expect(report?.files[0]?.warnings).toEqual(["syntax error at 3:14"]);
+  });
+
+  it("accepts a unit with the occurrences of --explain", () => {
+    const report = parseReport(reportWithOccurrence(validOccurrence()));
+
+    expect(report?.files[0]?.units[0]?.occurrences).toEqual([validOccurrence()]);
   });
 
   it.each(["", "Report written to cdd-report.json", "{", "null", "[]", '"text"'])(
@@ -104,6 +127,15 @@ describe("parseReport", () => {
     expect(parseReport(reportWithMetric(metric))).toBeUndefined();
   });
 
+  it.each(["metric", "line", "col", "end_line", "end_col", "count", "score"])(
+    "rejects an occurrence with no %s field",
+    (field) => {
+      const occurrence = withoutField(validOccurrence(), field);
+
+      expect(parseReport(reportWithOccurrence(occurrence))).toBeUndefined();
+    },
+  );
+
   it.each([
     ["partial", { partial: "false" }],
     ["blocked", { blocked: 0 }],
@@ -129,6 +161,7 @@ describe("parseReport", () => {
     ["limit", { limit: "10" }],
     ["exceeds", { exceeds: "true" }],
     ["metrics", { metrics: {} }],
+    ["occurrences", { occurrences: {} }],
   ])("rejects a unit with a %s field of the wrong type", (_field, changes) => {
     expect(parseReport(reportWithUnit(changes))).toBeUndefined();
   });
@@ -139,5 +172,14 @@ describe("parseReport", () => {
     ["score", { metric: "code_branch", count: 4, score: "4" }],
   ])("rejects a metric with a %s field of the wrong type", (_field, metric) => {
     expect(parseReport(reportWithMetric(metric))).toBeUndefined();
+  });
+
+  it.each([
+    ["metric", { metric: 1 }],
+    ["line", { line: "4" }],
+    ["end_col", { end_col: null }],
+    ["score", { score: "1" }],
+  ])("rejects an occurrence with a %s field of the wrong type", (_field, changes) => {
+    expect(parseReport(reportWithOccurrence({ ...validOccurrence(), ...changes }))).toBeUndefined();
   });
 });

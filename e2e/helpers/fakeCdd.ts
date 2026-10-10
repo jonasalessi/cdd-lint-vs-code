@@ -12,6 +12,16 @@ export type FakeResponse = {
   delayMs?: number;
 };
 
+export type FakeOccurrence = {
+  metric: string;
+  line: number;
+  col: number;
+  end_line: number;
+  end_col: number;
+  count: number;
+  score: number;
+};
+
 export type FakeUnit = {
   name: string;
   kind: string;
@@ -21,6 +31,7 @@ export type FakeUnit = {
   limit: number;
   exceeds: boolean;
   metrics: { metric: string; count: number; score: number }[];
+  occurrences?: FakeOccurrence[];
 };
 
 type ReportOptions = {
@@ -93,7 +104,7 @@ export function reportOf(relativePath: string, units: FakeUnit[], options: Repor
     root: ".",
     blocked: options.blocked ?? false,
     filter: "all",
-    explain: false,
+    explain: true,
     partial: false,
     elapsed_ms: 1,
     files: [file],
@@ -113,7 +124,7 @@ export function readRuns(): string[] {
 }
 
 export function runOf(relativePath: string): string {
-  return `check ${relativePath} --all --format json`;
+  return `check ${relativePath} --all --explain --format json`;
 }
 
 // Waits until the call log has a minimum of `count` runs. Gives the runs.
