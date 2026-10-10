@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      CDD_NETWORK_TESTS: "1"
+    outputs:
+      vsix: ${{ steps.version.outputs.vsix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Check that the tag is equal to the package version
+        id: version
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::The tag $GITHUB_REF_NAME is not equal to v$version, the version of package.json."
+            exit 1
+          fi
+          echo "vsix=cdd-lint-vscode-$version.vsix" >> "$GITHUB_OUTPUT"
+
+      - run: npm ci
+
+      - name: Fetch the pinned cdd binary
+        shell: bash
+        run: echo "CDD_BIN=$(node scripts/fetch-cdd.mjs)" >> "$GITHUB_ENV"
+
+      - name: Verify
+        run: xvfb-run -a npm run verify
+
+      - name: Upload the VSIX to the GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VSIX: ${{ steps.version.outputs.vsix }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --generate-notes
+          fi
+          gh release upload "$GITHUB_REF_NAME" "$VSIX" --clobber
+
+      - name: Pass the VSIX to the publish job
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsix
+          path: ${{ steps.version.outputs.vsix }}
+          if-no-files-found: error
+
+  publish-marketplace:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      VSIX: ${{ needs.release.outputs.vsix }}
+    steps:
+      - name: Check that the VSCE_PAT secret is set
+        id: token
+        shell: bash
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -n "$VSCE_PAT" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::The VSCE_PAT secret is not set. The Marketplace publication is skipped."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.available == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.token.outputs.available == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+        if: steps.token.outputs.available == 'true'
+
+      - name: Download the VSIX
+        if: steps.token.outputs.available == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: vsix
+
+      - name: Publish to the Marketplace
+        if: steps.token.outputs.available == 'true'
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx vsce publish --packagePath "$VSIX"
