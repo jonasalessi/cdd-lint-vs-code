@@ -1,0 +1,27 @@
+version: 1
+project_type: legacy
+metrics:
+  typescript:
+    ".*":
+      code_branch: 1.0
+      condition: 1.0
+      exception_handling: 1.0
+      internal_coupling: 1.0
+      external_coupling: 0.5
+      inheritance: 1.0
+icp-limits:
+  typescript:
+    ".*": 3
+enforcement:
+  block_on_ci: false
+  legacy_mode: measure_only
+timeout: 5m
+reporter:
+  format: console
+  outputFile: null
+internal_coupling:
+  auto_detect: true
+  packages: []
+include: []
+exclude:
+  - "**/excluded/**"

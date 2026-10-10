@@ -1,0 +1,27 @@
+version: 1
+project_type: greenfield
+metrics:
+  typescript:
+    ".*":
+      code_branch: 1.0
+      condition: 1.0
+      exception_handling: 1.0
+      internal_coupling: 1.0
+      external_coupling: 0.5
+      inheritance: 1.0
+icp-limits:
+  typescript:
+    ".*": 10
+enforcement:
+  block_on_ci: true
+  legacy_mode: strict_all
+timeout: 1ns
+reporter:
+  format: console
+  outputFile: null
+internal_coupling:
+  auto_detect: true
+  packages: []
+include: []
+exclude:
+  - "**/excluded/**"
