@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+// Test double of the cdd binary. Plan section 4.1 defines its behavior.
+const { appendFileSync, readFileSync } = require("node:fs");
+
+const emptyResponse = { stdout: "", stderr: "", exitCode: 0, delayMs: 0 };
+
+function logArguments(argumentList) {
+  const logPath = process.env.FAKE_CDD_LOG;
+  if (logPath) {
+    appendFileSync(logPath, `${argumentList.join(" ")}\n`);
+  }
+}
+
+function readResponse() {
+  const responsePath = process.env.FAKE_CDD_RESPONSE;
+  const response = responsePath ? JSON.parse(readFileSync(responsePath, "utf8")) : {};
+  return { ...emptyResponse, ...response };
+}
+
+function respond(response) {
+  process.stdout.write(response.stdout);
+  process.stderr.write(response.stderr);
+  process.exitCode = response.exitCode;
+}
+
+// The response is read before the log line is written. A test that sees the log line of a run
+// can then change the response file, and the run keeps its response.
+function check(argumentList) {
+  const response = readResponse();
+  logArguments(argumentList);
+  setTimeout(() => respond(response), response.delayMs);
+}
+
+const argumentList = process.argv.slice(2);
+if (argumentList[0] === "version") {
+  logArguments(argumentList);
+  console.log("cdd v0.1.0 (fake)");
+} else if (argumentList[0] === "check") {
+  check(argumentList);
+} else {
+  logArguments(argumentList);
+  console.error(`cdd: unknown command ${argumentList[0]}`);
+  process.exitCode = 1;
+}
