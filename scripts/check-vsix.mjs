@@ -9,6 +9,7 @@ const allowedFiles = [
   "readme.md",
   "changelog.md",
   "license.txt",
+  "logo.png",
 ];
 
 function defaultVsixPath() {
