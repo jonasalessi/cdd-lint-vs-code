@@ -1,0 +1,9 @@
+dist/
+out/
+.vscode-test/
+.cdd-bin/
+package-lock.json
+initial-plan.md
+initial-plan-v2.md
+e2e/workspace/
+contract/fixtures/

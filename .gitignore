@@ -147,3 +147,9 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# VS Code extension packages
+*.vsix
+
+# Binary that scripts/fetch-cdd.mjs downloads
+.cdd-bin/

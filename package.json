@@ -1,0 +1,106 @@
+{
+  "name": "cdd-lint-vscode",
+  "displayName": "CDD Lint",
+  "description": "Shows the ICP scores of cdd-lint as Inlay Hints and reports ICP violations as diagnostics.",
+  "version": "0.1.0",
+  "publisher": "jonasalessi",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jonasalessi/cdd-lint-vs-code"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": false
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "cdd.analyzeCurrentFile",
+        "title": "CDD: Analyze Current File"
+      },
+      {
+        "command": "cdd.selectBinary",
+        "title": "CDD: Select Binary"
+      },
+      {
+        "command": "cdd.installBinary",
+        "title": "CDD: Install Managed Binary"
+      },
+      {
+        "command": "cdd.showOutput",
+        "title": "CDD: Show Output"
+      }
+    ],
+    "configuration": {
+      "title": "CDD",
+      "properties": {
+        "cdd.binaryPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "Absolute path of the cdd executable. Empty means automatic discovery."
+        },
+        "cdd.showInlayHints": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Shows or hides the ICP Inlay Hints."
+        },
+        "cdd.showDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Publishes or clears the ICP diagnostics."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc --noEmit && node esbuild.mjs",
+    "lint": "eslint . && prettier --check .",
+    "test": "vitest run",
+    "test:contract": "vitest run --config vitest.contract.config.mjs",
+    "test:e2e": "npm run build && tsc -p e2e && vscode-test",
+    "package": "vsce package --no-dependencies && node scripts/check-vsix.mjs",
+    "verify": "npm run lint && npm run build && npm run test && npm run test:contract && npm run test:e2e && npm run package",
+    "verify:windows": "npm run lint && npm run build && npm run test && npm run test:contract && npm run package"
+  },
+  "dependencies": {
+    "tar": "^7.5.22",
+    "yaml": "^2.9.1",
+    "yauzl": "^3.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.19.43",
+    "@types/vscode": "1.90.0",
+    "@types/yauzl": "^3.4.0",
+    "@vscode/test-cli": "0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^4.1.11"
+  }
+}
