@@ -170,6 +170,12 @@ Other problems:
 - **The binary is installed, but the extension does not find it.** If VS Code cannot read your shell environment, a binary in a user directory is not on the `PATH` of the extension. Run `CDD: Select Binary` and select the binary.
 - **No CDD item in the language status.** The item appears only for a `.go`, `.java`, `.kt`, `.ts` or `.tsx` file on disk. Also make sure that the workspace is trusted.
 
+## Acknowledgments
+
+Thanks to Alberto Luiz Oliveira Tavares de Souza and Victor Hugo Santiago Costa Pinto, the authors of Cognitive-Driven Development. This extension and cdd-lint implement their method:
+
+> Tavares de Souza, A. L. O., Costa Pinto, V. H. S. 2020. Toward a Definition of Cognitive-Driven Development. 2020 IEEE International Conference on Software Maintenance and Evolution (ICSME), pp. 776-778. https://doi.org/10.1109/ICSME46990.2020.00087
+
 ## Contributing
 
 Contributions are welcome. You can report a bug, suggest an improvement, improve the documentation or send a pull request.
