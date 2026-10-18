@@ -14,6 +14,12 @@ import {
 } from "./execFileFake";
 import { managedBinaryPath } from "./managedBinaryPath";
 
+const hostPlatform = process.platform;
+
+function executableName(name: string): string {
+  return hostPlatform === "win32" ? `${name}.exe` : name;
+}
+
 describe("BinaryResolver", () => {
   let root: string;
   let pathDirectory: string;
@@ -32,7 +38,7 @@ describe("BinaryResolver", () => {
       execFile: fake.execFile,
       getBinaryPathSetting: () => binaryPathSetting,
       getPathValue: () => pathDirectory,
-      platform: "linux",
+      platform: hostPlatform,
       storageDir,
       log: {
         info: (message) => infoMessages.push(message),
@@ -56,9 +62,9 @@ describe("BinaryResolver", () => {
     storageDir = join(root, "storage");
     mkdirSync(pathDirectory);
     configuredPath = join(root, "configured", "cdd");
-    cddOnPath = join(pathDirectory, "cdd");
-    cddLintOnPath = join(pathDirectory, "cdd-lint");
-    managedPath = managedBinaryPath({ storageDir, platform: "linux" });
+    cddOnPath = join(pathDirectory, executableName("cdd"));
+    cddLintOnPath = join(pathDirectory, executableName("cdd-lint"));
+    managedPath = managedBinaryPath({ storageDir, platform: hostPlatform });
     binaryPathSetting = "";
     fake = createExecFileFake();
     infoMessages = [];
