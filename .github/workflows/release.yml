@@ -17,9 +17,9 @@ jobs:
     outputs:
       vsix: ${{ steps.version.outputs.vsix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -56,7 +56,7 @@ jobs:
           gh release upload "$GITHUB_REF_NAME" "$VSIX" --clobber
 
       - name: Pass the VSIX to the publish job
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: vsix
           path: ${{ steps.version.outputs.vsix }}
@@ -83,10 +83,10 @@ jobs:
             echo "::notice::The VSCE_PAT secret is not set. The Marketplace publication is skipped."
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: steps.token.outputs.available == 'true'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.token.outputs.available == 'true'
         with:
           node-version: 22
@@ -97,7 +97,7 @@ jobs:
 
       - name: Download the VSIX
         if: steps.token.outputs.available == 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: vsix
 
