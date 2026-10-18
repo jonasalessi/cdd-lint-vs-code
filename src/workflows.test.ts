@@ -7,6 +7,7 @@ type Step = {
   id?: string;
   if?: string;
   run?: string;
+  uses?: string;
   env?: Record<string, string>;
 };
 
@@ -53,6 +54,31 @@ function stepWithRun(job: Job, command: string): Step {
   }
   return step;
 }
+
+const node24ActionMajors: Record<string, number> = {
+  "actions/checkout": 5,
+  "actions/setup-node": 5,
+  "actions/upload-artifact": 6,
+  "actions/download-artifact": 7,
+};
+
+function actionsOf(workflow: Workflow): string[] {
+  return Object.values(workflow.jobs).flatMap((job) =>
+    job.steps.flatMap((step) => (step.uses === undefined ? [] : [step.uses])),
+  );
+}
+
+function runsOnNode20(action: string): boolean {
+  const [name = "", version = ""] = action.split("@");
+  const minimumMajor = node24ActionMajors[name] ?? 0;
+  return Number(version.replace(/^v/, "").split(".")[0]) < minimumMajor;
+}
+
+describe.each(["ci.yml", "release.yml"])("%s actions", (fileName) => {
+  it("use only majors that run on Node.js 24", () => {
+    expect(actionsOf(readWorkflow(fileName)).filter(runsOnNode20)).toEqual([]);
+  });
+});
 
 function jobsWithWritePermission(workflow: Workflow): string[] {
   return Object.entries(workflow.jobs)

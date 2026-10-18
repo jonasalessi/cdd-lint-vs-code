@@ -29,7 +29,8 @@ describe("findOnPath", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  describe("on POSIX", () => {
+  // A POSIX PATH value cannot hold a Windows drive path such as C:\, because ":" is its delimiter.
+  describe.skipIf(process.platform === "win32")("on POSIX", () => {
     it("finds a file with the exact name and returns its absolute path", async () => {
       const emptyDirectory = createDirectory("empty");
       const binaryPath = createFile(createDirectory("bin"), "cdd");
